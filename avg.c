@@ -6,31 +6,52 @@
 
 #include <stdlib.h>
 
+/**
+ * Averages an array of integers.
+ *
+ * Averages an array of integers, without overflow or conversion to a larger type.
+ * It is equivalent to the sum of the array, divided by the array's length (rounded towards zero).
+ * 
+ * @param n Number of array elements. Must be greater than zero.
+ * @param arr A pointer to an array of n integers. Must be non-null.
+ * @return The mean of the array's elements. 
+ */
 int iavg(int n, const int arr[static const n])
 {
 	int avg = 0;
-	int rem[2] = {0, 0};
-	int add[2] = {0, 0};
+
+	/* A buffer of values that are lost to integer truncation.
+	 * It should always be in the closed interval (-n, n).
+	 */
+	int error = 0;
 
 	for (int i = 0; i < n; ++i) {
 		avg += arr[i] / n;
 
-		int a = abs(arr[i] % n);
-		int j = arr[i] < 0;
+		int loss = arr[i] % n;
 
-		if (rem[j] >= n - a) {
-			rem[j] = a - (n - rem[j]);
-			++add[j];
+		// error + loss >= n
+		if (error > 0 && loss > 0 && error >= n - loss) {
+			// error = (error + loss) - n
+			error -= n - loss;
+			++avg;
+
+		// error + loss <= -n
+		} else if (error < 0 && loss < 0 && error <= -n - loss) {
+			// error = (error + loss) + n
+			error += n + loss;
+			--avg;
+
 		} else {
-			rem[j] += a;
+			error += loss;
 		}
 	}
 
-	avg += add[0] - add[1];
+	// Fix some overcompensation for error
 
-	if (avg < 0 && rem[0] > rem[1])
+	if (avg < 0 && error > 0)
 		++avg;
-	else if (avg > 0 && rem[0] < rem[1])
+	else if (avg > 0 && error < 0)
 		--avg;
 
 	return avg;
