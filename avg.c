@@ -19,36 +19,14 @@
 int iavg(int n, const int arr[static const n])
 {
 	int avg = 0;
-
-	/* A buffer of values that are lost to integer truncation.
-	 * It should always be in the closed interval (-n, n).
-	 */
 	int error = 0;
 
 	for (int i = 0; i < n; ++i) {
-		avg += arr[i] / n;
-
-		int loss = arr[i] % n;
-
-		// error + loss >= n
-		if (error > 0 && loss > 0 && error >= n - loss) {
-			// error = (error + loss) - n
-			error -= n - loss;
-			++avg;
-
-		// error + loss <= -n
-		} else if (error < 0 && loss < 0 && error <= -n - loss) {
-			// error = (error + loss) + n
-			error += n + loss;
-			--avg;
-
-		} else {
-			error += loss;
-		}
+		error += arr[i] % n;
+		avg += (arr[i] / n) + (error / n);
+		error %= n;
 	}
-
-	// Fix some overcompensation for error
-
+	
 	if (avg < 0 && error > 0)
 		++avg;
 	else if (avg > 0 && error < 0)
