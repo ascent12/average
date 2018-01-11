@@ -27,6 +27,7 @@ int iavg(int n, const int arr[static const n])
 		error %= n;
 	}
 	
+	// Fix some overcompensation for error
 	if (avg < 0 && error > 0)
 		++avg;
 	else if (avg > 0 && error < 0)
